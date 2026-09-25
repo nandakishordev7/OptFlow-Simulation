@@ -1,0 +1,11 @@
+# nuScenes / Argoverse: sparser clouds -> larger k_local (paper Sec. 3.2 note)
+lr: 0.004
+iters: 600
+k_local: 16
+eps: 0.03
+thresh_init: 2.0
+thresh_min: 0.2
+thresh_interval: 100
+k_rigid: 50
+alpha_rigid: 1.0
+use_ego_motion: true

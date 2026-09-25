@@ -1,0 +1,11 @@
+# KITTI (Graph-Prior preprocessed, ground removed). k_local / alpha_rigid need tuning.
+lr: 0.004
+iters: 600
+k_local: 8
+eps: 0.03
+thresh_init: 2.0
+thresh_min: 0.2
+thresh_interval: 100
+k_rigid: 50
+alpha_rigid: 1.0
+use_ego_motion: true
