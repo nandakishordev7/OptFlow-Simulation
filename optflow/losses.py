@@ -16,20 +16,21 @@ def soft_correspondence_loss(src, tgt, k_local, eps, thresh, use_correlation=Tru
     q = tgt[idx]                                           # (N,k,3)
     d2 = ((src.unsqueeze(1) - q) ** 2).sum(-1)             # (N,k), differentiable
     valid = d2.detach() < thresh ** 2
+    point_valid = valid.any(1)
+    if point_valid.sum() == 0:
+        return src.sum() * 0.0
 
     if use_correlation:
         sim = torch.exp(-d2)                               # Eq. 3
         logw = (sim - 1.0) / eps                           # log of Eq. 4
-        logw = logw.masked_fill(~valid, float('-inf'))
+        # -1e9 instead of -inf: never produces NaN. Rows with no valid neighbour get
+        # meaningless weights, but those points are dropped below via point_valid.
+        logw = logw.masked_fill(~valid, -1e9)
         w = torch.softmax(logw, dim=1)                     # Eq. 5 normalisation, stable
-        w = torch.nan_to_num(w, nan=0.0)                   # rows with no valid neighbour
         q_avg = (w.unsqueeze(-1) * q).sum(1)               # (N,3)
     else:
         q_avg = q[:, 0]
 
-    point_valid = valid.any(1)
-    if point_valid.sum() == 0:
-        return src.sum() * 0.0
     res = ((src - q_avg) ** 2).sum(-1)                     # Eq. 6 per point
     return res[point_valid].mean()
 

@@ -5,4 +5,4 @@ data/argoverse/    *.npz
 data/nuscenes/     *.npz
 data/flyingthings/ *.npz
 
-Download with:  bash scripts/download_data.sh kitti
+Download with:  python scripts/download_data.py kitti

@@ -7,5 +7,5 @@ thresh_init: 2.0
 thresh_min: 0.2
 thresh_interval: 100
 k_rigid: 50
-alpha_rigid: 1.0
+alpha_rigid: 100.0
 use_ego_motion: true

@@ -51,19 +51,28 @@ def best_fit_transform(A, B):
 
 
 @torch.no_grad()
-def icp(src, tgt, iters=30, max_dist=1.0):
-    """Point-to-point ICP src->tgt. Returns R (3,3), t (3,)."""
+def icp(src, tgt, iters=20, max_dists=(3.0, 1.0, 0.5)):
+    """Point-to-point ICP src->tgt, coarse-to-fine.
+
+    max_dists: correspondence rejection distances, one ICP stage each. A large first
+    distance (3 m) keeps correct matches when the car moved > 1 m between frames;
+    the later, tighter stages reject dynamic objects. A single float also works.
+    Returns R (3,3), t (3,)."""
+    if isinstance(max_dists, (int, float)):
+        max_dists = (max_dists,)
     R = torch.eye(3, dtype=src.dtype, device=src.device)
     t = torch.zeros(3, dtype=src.dtype, device=src.device)
-    for _ in range(iters):
-        moved = src @ R.T + t
-        d, i = knn(moved, tgt, 1)
-        d, i = d[:, 0], i[:, 0]
-        keep = d < max_dist
-        if keep.sum() < 10:
-            break
-        dR, dt = best_fit_transform(moved[keep], tgt[i[keep]])
-        R, t = dR @ R, dR @ t + dt
-        if (dR - torch.eye(3, device=src.device)).abs().max() < 1e-6 and dt.norm() < 1e-6:
-            break
+    I = torch.eye(3, dtype=src.dtype, device=src.device)
+    for max_dist in max_dists:
+        for _ in range(iters):
+            moved = src @ R.T + t
+            d, i = knn(moved, tgt, 1)
+            d, i = d[:, 0], i[:, 0]
+            keep = d < max_dist
+            if keep.sum() < 10:
+                break
+            dR, dt = best_fit_transform(moved[keep], tgt[i[keep]])
+            R, t = dR @ R, dR @ t + dt
+            if (dR - I).abs().max() < 1e-6 and dt.norm() < 1e-6:
+                break
     return R, t
