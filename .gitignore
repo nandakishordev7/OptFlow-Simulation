@@ -1,0 +1,13 @@
+# datasets are large -> never commit them
+data/*
+!data/README.md
+*.npz
+*.zip
+# results / python / env
+results*.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+.vscode/
